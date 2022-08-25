@@ -1,6 +1,10 @@
+## TL;DR 
+Solution was to pass `CODE_SIGN_STYLE=Manual` alongside with `DEVELOPMENT_TEAM=...` and `CODE_SIGN_IDENTITY=...`.
+For more info see [this thread on Swift Forums](https://forums.swift.org/t/xcode-14-beta-code-signing-issues-when-spm-targets-include-resources/59685).
+
 ## Overview
 
-A sample project to demonstrate differences in signing between Xcode 13 and Xcode 14 beta 5. Especially when a setup includes an app target that depends on an SPM library which in turn depends on another SPM library with resources. And codesigning settings are overridden via `xcodebuild` arguments.
+A sample project to demonstrate differences in signing between Xcode 13 and Xcode 14 beta 6. Especially when a setup includes an app target that depends on an SPM library which in turn depends on another SPM library with resources. And codesigning settings are overridden via `xcodebuild` arguments.
 
 ### Setup
 
@@ -31,8 +35,8 @@ Touch ~/Library/Developer/Xcode/DerivedData/SPMBundleSign-haxtvhvzilukzufoivtdbo
 ** ARCHIVE SUCCEEDED **
 ```
 
-### Xcode 14 beta 5
-* Select Xcode 14 beta 5 via `xcode-select`
+### Xcode 14 beta 6
+* Select Xcode 14 beta 6 via `xcode-select`
 * Run 
 ```
 ./archive.sh CODE_SIGN_IDENTITY="Apple Distribution"
@@ -61,18 +65,13 @@ note: Building targets in dependency order
 ** ARCHIVE FAILED **
 ```
 * `spm-bundle-sign-package_TargetWithResources has conflicting provisioning settings`. 
-  * Does it mean that we can pass provisioning profile directly to `xcodebuild`?
-* Run archiving script with development team and provisioning profile while also setting code signing to manual 
+  * Solution here is to add `CODE_SIGN_STYLE=Manual`
 ```
-./archive.sh CODE_SIGN_IDENTITY="Apple Distribution" DEVELOPMENT_TEAM="7V2Y6HDP66" PROVISIONING_PROFILE_SPECIFIER="SPMBundleSign Distribution" CODE_SIGN_STYLE="Manual"
+./archive.sh CODE_SIGN_IDENTITY="Apple Distribution" DEVELOPMENT_TEAM="7V2Y6HDP66" CODE_SIGN_STYLE="Manual"
 ```
-* Archive failed #3
+
+* Archive succeeded
 
 ```
-note: Building targets in dependency order
-~/dev/oss/spm-bundle-sign/Package.swift: error: spm-bundle-sign-package_TargetWithResources does not support provisioning profiles. spm-bundle-sign-package_TargetWithResources does not support provisioning profiles, but provisioning profile SPMBundleSign Distribution has been manually specified. Set the provisioning profile value to "Automatic" in the build settings editor. (in target 'spm-bundle-sign-package_TargetWithResources' from project 'spm-bundle-sign-package')
-~/dev/oss/spm-bundle-sign/SPMBundleSign/Dependencies/Package.swift: error: DependenciesUmbrella does not support provisioning profiles. DependenciesUmbrella does not support provisioning profiles, but provisioning profile SPMBundleSign Distribution has been manually specified. Set the provisioning profile value to "Automatic" in the build settings editor. (in target 'DependenciesUmbrella' from project 'Dependencies')
-** ARCHIVE FAILED **
+** ARCHIVE SUCCEEDED **
 ```
-* `spm-bundle-sign-package_TargetWithResources does not support provisioning profiles.` 
-  * 🤔
